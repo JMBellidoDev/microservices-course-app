@@ -1,0 +1,4 @@
+app\entity\Invoice.class
+app\repository\InvoiceRepository.class
+app\InvoiceApplication.class
+app\controller\InvoiceRestController.class
