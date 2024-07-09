@@ -1,0 +1,6 @@
+.mtj.tmp/
+*.class
+*.jar
+*.war
+*.ear
+*.nar
