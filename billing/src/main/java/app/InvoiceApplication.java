@@ -18,5 +18,3 @@ public class InvoiceApplication {
     SpringApplication.run(InvoiceApplication.class, args);
   }
 }
-
-// frase de prueba
