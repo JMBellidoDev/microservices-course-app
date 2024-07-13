@@ -1,12 +1,16 @@
 package formacion.microservicios.app.controller;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cloud.client.circuitbreaker.CircuitBreakerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -26,8 +30,8 @@ public class ItemController {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ItemController.class);
 
-  @Autowired
-  private CircuitBreakerFactory cbFactory;
+  @Value("${configuracion.texto}")
+  private String texto;
 
   @Autowired
   private IItemService itemService;
@@ -41,39 +45,25 @@ public class ItemController {
   }
 
   @GetMapping("/{id}/{cantidad}")
-  public Item detalle(@PathVariable Long id, @PathVariable int cantidad) {
-
-    // Nombre "items" como identificador para ser llamado más tarde
-    return cbFactory.create("items").run(() -> itemService.findById(id, cantidad),
-        e -> metodoAlternativo(id, cantidad, e));
-  }
-
-  @GetMapping("/vis{id}/{cantidad}")
-  @CircuitBreaker(name = "items", fallbackMethod = "metodoAlternativo2")
+  @CircuitBreaker(name = "items", fallbackMethod = "metodoAlternativo")
   @TimeLimiter(name = "items")
-  public CompletableFuture<Item> detalle2(@PathVariable Long id, @PathVariable int cantidad) {
+  public CompletableFuture<Item> detalle(@PathVariable Long id, @PathVariable int cantidad) {
 
     // Nombre "items" como identificador para ser llamado más tarde
     return CompletableFuture.supplyAsync(() -> itemService.findById(id, cantidad));
   }
 
-  public Item metodoAlternativo(Long id, int cantidad, Throwable e) {
+  @GetMapping("/obtener-config")
+  public ResponseEntity<Object> obtenerConfig(@Value("${server.port}") String puerto) {
 
-    LOGGER.info(e.getMessage());
+    Map<String, String> json = new HashMap<>();
+    json.put("texto", texto);
+    json.put("puerto", puerto);
 
-    Item item = new Item();
-    ProductoDto prod = new ProductoDto();
-
-    item.setCantidad(cantidad);
-    prod.setId(id);
-    prod.setNombre("Cámara Sony");
-    prod.setPrecio(500.01);
-    item.setProductoDto(prod);
-
-    return item;
+    return new ResponseEntity<>(json, HttpStatus.OK);
   }
 
-  public CompletableFuture<Item> metodoAlternativo2(Long id, int cantidad, Throwable e) {
+  public CompletableFuture<Item> metodoAlternativo(Long id, int cantidad, Throwable e) {
 
     LOGGER.info(e.getMessage());
 
