@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -29,6 +30,9 @@ import io.github.resilience4j.timelimiter.annotation.TimeLimiter;
 public class ItemController {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ItemController.class);
+
+  @Autowired
+  private Environment env;
 
   @Value("${configuracion.texto}")
   private String texto;
@@ -53,16 +57,6 @@ public class ItemController {
     return CompletableFuture.supplyAsync(() -> itemService.findById(id, cantidad));
   }
 
-  @GetMapping("/obtener-config")
-  public ResponseEntity<Object> obtenerConfig(@Value("${server.port}") String puerto) {
-
-    Map<String, String> json = new HashMap<>();
-    json.put("texto", texto);
-    json.put("puerto", puerto);
-
-    return new ResponseEntity<>(json, HttpStatus.OK);
-  }
-
   public CompletableFuture<Item> metodoAlternativo(Long id, int cantidad, Throwable e) {
 
     LOGGER.info(e.getMessage());
@@ -79,4 +73,18 @@ public class ItemController {
     return CompletableFuture.supplyAsync(() -> item);
   }
 
+  @GetMapping("/obtener-config")
+  public ResponseEntity<Object> obtenerConfig(@Value("${server.port}") String puerto) {
+
+    Map<String, String> json = new HashMap<>();
+    json.put("texto", texto);
+    json.put("puerto", puerto);
+
+    if (env.getActiveProfiles().length > 0 && env.getActiveProfiles()[0].equals("dev")) {
+      json.put("autor.nombre", env.getProperty("configuracion.autor.nombre"));
+      json.put("autor.email", env.getProperty("configuracion.autor.email"));
+    }
+
+    return new ResponseEntity<>(json, HttpStatus.OK);
+  }
 }
