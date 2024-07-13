@@ -9,24 +9,30 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import formacion.microservicios.app.model.Item;
-import formacion.microservicios.app.model.ProductoDto;
+import formacion.microservicios.app.models.Producto;
 import formacion.microservicios.app.service.IItemService;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.timelimiter.annotation.TimeLimiter;
 
-@RestController
 @RequestMapping("/items")
+@RestController
+@RefreshScope
 public class ItemController {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ItemController.class);
@@ -62,15 +68,32 @@ public class ItemController {
     LOGGER.info(e.getMessage());
 
     Item item = new Item();
-    ProductoDto prod = new ProductoDto();
+    Producto prod = new Producto();
 
     item.setCantidad(cantidad);
     prod.setId(id);
     prod.setNombre("Cámara Sony");
     prod.setPrecio(500.01);
-    item.setProductoDto(prod);
+    item.setProducto(prod);
 
     return CompletableFuture.supplyAsync(() -> item);
+  }
+
+  @PostMapping("/crear")
+  public ResponseEntity<Producto> crear(@RequestBody Producto producto) {
+
+    return itemService.save(producto);
+  }
+
+  @PutMapping("/editar/{id}")
+  public ResponseEntity<Producto> editar(@RequestBody Producto producto, @PathVariable Long id) {
+
+    return itemService.update(producto, id);
+  }
+
+  @DeleteMapping("/eliminar/{id}")
+  public ResponseEntity<Producto> eliminar(@PathVariable Long id) {
+    return itemService.delete(id);
   }
 
   @GetMapping("/obtener-config")

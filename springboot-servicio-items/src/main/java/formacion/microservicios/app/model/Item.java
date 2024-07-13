@@ -1,5 +1,6 @@
 package formacion.microservicios.app.model;
 
+import formacion.microservicios.app.models.Producto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -9,12 +10,12 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class Item {
 
-  private ProductoDto productoDto;
+  private Producto producto;
 
   private int cantidad;
 
   public double getTotal() {
-    return productoDto.getPrecio() * cantidad;
+    return producto.getPrecio() * cantidad;
   }
 
 }

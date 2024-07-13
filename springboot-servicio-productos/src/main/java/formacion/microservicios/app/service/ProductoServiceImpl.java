@@ -7,7 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import formacion.microservicios.app.entity.Producto;
+import formacion.microservicios.app.models.Producto;
 import formacion.microservicios.app.repository.ProductoRepository;
 
 @Service
@@ -16,16 +16,6 @@ public class ProductoServiceImpl implements IProductoService {
   /** Repositorio de productos */
   @Autowired
   private ProductoRepository productoRepository;
-
-  /**
-   * COnstructor
-   * 
-   * @param productoRepository Repositorio de productos
-   */
-  public ProductoServiceImpl(ProductoRepository productoRepository) {
-
-    this.productoRepository = productoRepository;
-  }
 
   @Override
   @Transactional(readOnly = true)
@@ -39,6 +29,17 @@ public class ProductoServiceImpl implements IProductoService {
 
     Optional<Producto> optProducto = productoRepository.findById(id);
     return optProducto.orElse(null);
+  }
+
+  @Override
+  @Transactional
+  public Producto save(Producto producto) {
+    return productoRepository.save(producto);
+  }
+
+  @Override
+  public void deleteById(Long id) {
+    productoRepository.deleteById(id);
   }
 
 }
