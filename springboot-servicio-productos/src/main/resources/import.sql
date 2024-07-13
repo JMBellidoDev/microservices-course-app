@@ -1,0 +1,1 @@
+insert into productos (nombre, precio) values ('Panasonic', 800), ('Sony', 700), ('Apple', 1000), ('Sony Notebook', 100), ('Hewlett Packard', 500), ('Nike', 100), ('Adidas', 200), ('Reebok', 300);
